@@ -1,6 +1,22 @@
 defmodule LoggerWebhookBackend do
   @moduledoc """
-  Documentation for `LoggerWebhookBackend`.
+  `logger_webhook_backend` is a custom logger backend for `Logger` that sends logs to a specified webhook URL. Presently, it only supports sending logs to Discord webhooks.
+
+  ## Configuration
+
+  `logger_webhook_backend` can be configured in your `config.exs` file. The following configuration options are available:
+  ```elixir
+    config :logger,
+      backends: [{MyAppModule, :webhook_logger}]
+
+    config :logger, :webhook_logger, level: :error
+  ```
+
+  Environment variables can be set in your `runtime.exs` file, like so:
+  ```elixir
+    config :logger, :webhook_logger,
+      webhook_url: System.get_env("WEBHOOK_URL")
+  ```
   """
 
   require Logger
@@ -39,8 +55,19 @@ defmodule LoggerWebhookBackend do
     is_nil(min_level) or Logger.compare_levels(lvl, min_level) != :lt
   end
 
-  def log_to_discord(webhook_url, level, msg, ts, md) do
-    formatted_msg = format_message(level, msg, ts, md)
+  @doc """
+  Send a log message to a Discord webhook URL.
+  """
+  @spec log_to_discord(
+          webhook_url :: String.t(),
+          log_level ::
+            :debug | :info | :notice | :warning | :error | :critical | :alert | :emergency,
+          message :: iodata,
+          timestamp :: DateTime.t(),
+          metadata :: map
+        ) :: :ok | {:error, term}
+  def log_to_discord(webhook_url, log_level, message, timestamp, metadata) do
+    formatted_msg = format_message(log_level, message, timestamp, metadata)
     body = %{content: formatted_msg} |> Jason.encode!()
     headers = [{~c"Content-Type", ~c"application/json"}]
 
@@ -64,12 +91,22 @@ defmodule LoggerWebhookBackend do
     end
   end
 
-  def format_message(level, msg, _ts, md) do
+  @doc """
+  Format a log message for markdown enabled webhooks. Used internally by `log_to_discord/5`.
+  """
+  @spec format_message(
+          log_level ::
+            :debug | :info | :notice | :warning | :error | :critical | :alert | :emergency,
+          message :: iodata,
+          timestamp :: DateTime.t(),
+          metadata :: map
+        ) :: iodata
+  def format_message(log_level, message, _timestamp, metadata) do
     timestamp = DateTime.utc_now()
-    source = md[:application]
-    msg = IO.iodata_to_binary(msg) |> String.slice(0..1900)
+    source = metadata[:application]
+    message = IO.iodata_to_binary(message) |> String.slice(0..1900)
 
-    "[#{timestamp}] [#{source}] [#{level}] `#{msg}`"
+    "[#{timestamp}] [#{source}] [#{log_level}] `#{message}`"
   end
 
   defp configure(name, opts) do

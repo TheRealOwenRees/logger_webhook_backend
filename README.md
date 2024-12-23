@@ -1,4 +1,4 @@
-# LoggerWebhookBackend
+# Logger Webhook Backend
 
 **TODO: Add description**
 
