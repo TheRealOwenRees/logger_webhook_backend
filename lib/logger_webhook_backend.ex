@@ -1,22 +1,24 @@
 defmodule LoggerWebhookBackend do
   @moduledoc """
-  `logger_webhook_backend` is a custom logger backend for `Logger` that sends logs to a specified webhook URL. Presently, it only supports sending logs to Discord webhooks.
+  `LoggerWebhookBackend` is a custom logger backend for `Logger` that sends logs to a specified webhook URL.
+
+  Testing has only taken place on Discord webhooks.
 
   ## Configuration
 
-  `logger_webhook_backend` can be configured in your `config.exs` file. The following configuration options are available:
-  ```elixir
-    config :logger,
-      backends: [{MyAppModule, :webhook_logger}]
+  `LoggerWebhookBackend` can be configured in your `config.exs` file. The following configuration options are available:
 
-    config :logger, :webhook_logger, level: :error
-  ```
+      config :logger,
+        backends: [{LoggerWebhookBackend, :webhook_logger}]
+
+      config :logger, :webhook_logger, level: :error
+
 
   Environment variables can be set in your `runtime.exs` file, like so:
-  ```elixir
-    config :logger, :webhook_logger,
-      webhook_url: System.get_env("WEBHOOK_URL")
-  ```
+
+      config :logger, :webhook_logger,
+        webhook_url: System.get_env("WEBHOOK_URL")
+
   """
 
   require Logger
