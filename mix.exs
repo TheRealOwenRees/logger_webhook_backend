@@ -8,7 +8,7 @@ defmodule LoggerWebhookBackend.MixProject do
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      description: "A Logger backend that sends logs to a webhook",
+      description: "A Logger backend that sends logs to a webhook.",
       package: package()
     ]
   end
@@ -25,7 +25,7 @@ defmodule LoggerWebhookBackend.MixProject do
 
   # Run "mix help compile.app" to learn about applications.
   def application do
-    test_apps = if Mix.env() == :test, do: [:logger], else: []
+    test_apps = if Mix.env() == :test, do: [:logger, :inets, :ssl], else: []
 
     [
       extra_applications: [] ++ test_apps

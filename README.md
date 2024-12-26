@@ -1,6 +1,6 @@
 # Logger Webhook Backend
 
-**TODO: Add description**
+A Logger backend that sends logs to a webhook
 
 ## Installation
 
@@ -10,7 +10,7 @@ by adding `logger_webhook_backend` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:logger_webhook_backend, "~> 0.1.0"}
+    {:logger_webhook_backend, "~> 0.0.1"}
   ]
 end
 ```
