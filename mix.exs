@@ -4,10 +4,22 @@ defmodule LoggerWebhookBackend.MixProject do
   def project do
     [
       app: :logger_webhook_backend,
-      version: "0.1.0",
+      version: "0.0.1",
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      description: "A Logger backend that sends logs to a webhook",
+      package: package()
+    ]
+  end
+
+  def package do
+    [
+      maintainers: ["Owen Rees"],
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => "https://github.com/therealowenrees/logger_webhook_backend"
+      }
     ]
   end
 
