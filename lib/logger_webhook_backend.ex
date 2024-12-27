@@ -27,6 +27,17 @@ defmodule LoggerWebhookBackend do
 
   @behaviour :gen_event
 
+  @colors %{
+    :debug => 0x3498DB,
+    :info => 0x2ECC71,
+    :notice => 0x2ECC71,
+    :warning => 0xF1C40F,
+    :error => 0xE74C3C,
+    :critical => 0xE74C3C,
+    :alert => 0xE74C3C,
+    :emergency => 0xE74C3C
+  }
+
   def init({__MODULE__, name}) do
     {:ok, configure(name, [])}
   end
@@ -41,7 +52,7 @@ defmodule LoggerWebhookBackend do
 
   def handle_event({level, _gl, {Logger, msg, ts, md}}, %{} = state) do
     if is_level_okay(level, state.level) do
-      log_to_discord(state.webhook_url, level, msg, ts, md)
+      log_to_discord(state.webhook_url, level, msg, ts, md, state.embed)
     end
 
     {:ok, state}
@@ -70,9 +81,21 @@ defmodule LoggerWebhookBackend do
           timestamp :: DateTime.t(),
           metadata :: map
         ) :: :ok | {:error, term}
-  def log_to_discord(webhook_url, log_level, message, timestamp, metadata) do
-    formatted_msg = format_message(log_level, message, timestamp, metadata)
-    body = %{content: formatted_msg} |> Jason.encode!()
+  def log_to_discord(webhook_url, log_level, message, timestamp, metadata, embed \\ false) do
+    body =
+      if embed do
+        formatted_msg = format_embed(log_level, message, timestamp, metadata)
+
+        %{embeds: formatted_msg}
+        |> Jason.encode!()
+      else
+        formatted_msg = format_message(log_level, message, timestamp, metadata)
+
+        %{content: formatted_msg}
+        |> Jason.encode!()
+      end
+
+    # body = %{content: formatted_msg} |> Jason.encode!()
     headers = [{~c"Content-Type", ~c"application/json"}]
 
     :httpc.request(
@@ -111,6 +134,24 @@ defmodule LoggerWebhookBackend do
     message = IO.iodata_to_binary(message) |> String.slice(0..1900)
 
     "[#{timestamp}] [#{source}] [#{log_level}] `#{message}`"
+  end
+
+  def format_embed(log_level, message, _timestamp, metadata) do
+    timestamp = DateTime.utc_now()
+    source = metadata[:application]
+    message = IO.iodata_to_binary(message) |> String.slice(0..1900)
+
+    [
+      %{
+        title: "#{source}",
+        description: "#{message}",
+        color: @colors[log_level],
+        timestamp: timestamp,
+        footer: %{
+          text: "#{log_level}"
+        }
+      }
+    ]
   end
 
   defp configure(name, opts) do
