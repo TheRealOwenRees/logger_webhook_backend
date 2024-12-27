@@ -79,23 +79,14 @@ defmodule LoggerWebhookBackend do
             :debug | :info | :notice | :warning | :error | :critical | :alert | :emergency,
           message :: iodata,
           timestamp :: DateTime.t(),
-          metadata :: map
+          metadata :: map,
+          embed :: boolean
         ) :: :ok | {:error, term}
   def log_to_discord(webhook_url, log_level, message, timestamp, metadata, embed \\ false) do
     body =
-      if embed do
-        formatted_msg = format_embed(log_level, message, timestamp, metadata)
+      format_message(log_level, message, timestamp, metadata, embed)
+      |> Jason.encode!()
 
-        %{embeds: formatted_msg}
-        |> Jason.encode!()
-      else
-        formatted_msg = format_message(log_level, message, timestamp, metadata)
-
-        %{content: formatted_msg}
-        |> Jason.encode!()
-      end
-
-    # body = %{content: formatted_msg} |> Jason.encode!()
     headers = [{~c"Content-Type", ~c"application/json"}]
 
     :httpc.request(
@@ -126,32 +117,34 @@ defmodule LoggerWebhookBackend do
             :debug | :info | :notice | :warning | :error | :critical | :alert | :emergency,
           message :: iodata,
           timestamp :: DateTime.t(),
-          metadata :: map
-        ) :: iodata
-  def format_message(log_level, message, _timestamp, metadata) do
+          metadata :: map,
+          embed :: boolean
+        ) :: iodata | list(map)
+  def format_message(log_level, message, _timestamp, metadata, embed \\ false) do
     timestamp = DateTime.utc_now()
     source = metadata[:application]
     message = IO.iodata_to_binary(message) |> String.slice(0..1900)
 
-    "[#{timestamp}] [#{source}] [#{log_level}] `#{message}`"
+    do_format_message(log_level, message, timestamp, source, embed)
   end
 
-  def format_embed(log_level, message, _timestamp, metadata) do
-    timestamp = DateTime.utc_now()
-    source = metadata[:application]
-    message = IO.iodata_to_binary(message) |> String.slice(0..1900)
-
-    [
+  defp do_format_message(log_level, message, timestamp, source, true) do
+    embeds = [
       %{
         title: "#{source}",
         description: "#{message}",
         color: @colors[log_level],
         timestamp: timestamp,
-        footer: %{
-          text: "#{log_level}"
-        }
+        footer: %{text: "#{log_level}"}
       }
     ]
+
+    %{embeds: embeds}
+  end
+
+  defp do_format_message(log_level, message, timestamp, source, false) do
+    content = "[#{timestamp}] [#{source}] [#{log_level}] `#{message}`"
+    %{content: content}
   end
 
   defp configure(name, opts) do

@@ -8,7 +8,7 @@ defmodule LoggerWebhookBackendTest.Functions.FormatMessage do
     timestamp = DateTime.utc_now()
 
     formatted_msg =
-      LoggerWebhookBackend.format_message(log_level, message, timestamp, metadata)
+      LoggerWebhookBackend.format_message(log_level, message, timestamp, metadata)[:content]
 
     # Assert the timestamp is within an acceptable delta
     [_, timestamp_part] = Regex.run(~r/\[(.*?)\]/, formatted_msg)
