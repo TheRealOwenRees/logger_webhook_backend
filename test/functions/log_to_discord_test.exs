@@ -56,12 +56,12 @@ defmodule LoggerWebhookBackendTest.Functions.LogToDiscord do
     end
   end
 
-  # manual testing required due to the nature of the test. Check the Discord channel for the message.
-  describe "real webhook tests" do
+  describe "mocked embed webhook test" do
     setup %{webhook_urls: webhook_urls} do
       config = [
         level: :error,
-        webhook_url: webhook_urls.real
+        webhook_url: webhook_urls.mock,
+        embed: true
       ]
 
       LoggerBackends.add({LoggerWebhookBackend, :webhook_logger})
@@ -70,11 +70,34 @@ defmodule LoggerWebhookBackendTest.Functions.LogToDiscord do
       on_exit(fn ->
         LoggerBackends.remove({LoggerWebhookBackend, :webhook_logger})
       end)
+
+      {:ok, embed: config[:embed]}
     end
 
-    @tag :integration
-    test "send message to real webhook" do
-      Logger.error("Sending log to actual Discord webhook")
+    test "sends an embed to the mocked Discord webhook", %{embed: embed} do
+      assert embed
     end
   end
+
+  # manual testing required due to the nature of the test. Check the Discord channel for the message.
+  # describe "real webhook tests" do
+  #   setup %{webhook_urls: webhook_urls} do
+  #     config = [
+  #       level: :error,
+  #       webhook_url: webhook_urls.real
+  #     ]
+
+  #     LoggerBackends.add({LoggerWebhookBackend, :webhook_logger})
+  #     LoggerBackends.configure({LoggerWebhookBackend, :webhook_logger}, config)
+
+  #     on_exit(fn ->
+  #       LoggerBackends.remove({LoggerWebhookBackend, :webhook_logger})
+  #     end)
+  #   end
+
+  #   @tag :integration
+  #   test "send message to real webhook" do
+  #     Logger.error("Sending log to actual Discord webhook")
+  #   end
+  # end
 end

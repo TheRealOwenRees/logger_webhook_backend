@@ -11,7 +11,9 @@ defmodule LoggerWebhookBackend do
       config :logger,
         backends: [{LoggerWebhookBackend, :webhook_logger}]
 
-      config :logger, :webhook_logger, level: :error
+      config :logger, :webhook_logger,
+        level: :error,
+        embed: true #Optional, defaults to false
 
 
   Environment variables can be set in your `runtime.exs` file:
@@ -123,7 +125,8 @@ defmodule LoggerWebhookBackend do
 
     new_state = %{
       webhook_url: Keyword.get(opts, :webhook_url, nil),
-      level: Keyword.get(opts, :level)
+      level: Keyword.get(opts, :level),
+      embed: Keyword.get(opts, :embed, false)
     }
 
     Map.merge(state, new_state)
