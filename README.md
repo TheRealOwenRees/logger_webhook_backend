@@ -13,3 +13,21 @@ def deps do
   ]
 end
 ```
+
+## Configuration
+
+`LoggerWebhookBackend` can be configured in your `config.exs` file:
+
+```elixir
+config :logger,
+  backends: [{LoggerWebhookBackend, :webhook_logger}]
+
+config :logger, :webhook_logger, level: :error
+```
+
+Environment variables can be set in your `runtime.exs` file:
+
+```elixir
+config :logger, :webhook_logger,
+  webhook_url: System.get_env("WEBHOOK_URL")
+```

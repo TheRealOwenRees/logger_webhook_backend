@@ -6,7 +6,7 @@ defmodule LoggerWebhookBackend do
 
   ## Configuration
 
-  `LoggerWebhookBackend` can be configured in your `config.exs` file. The following configuration options are available:
+  `LoggerWebhookBackend` can be configured in your `config.exs` file:
 
       config :logger,
         backends: [{LoggerWebhookBackend, :webhook_logger}]
@@ -14,7 +14,7 @@ defmodule LoggerWebhookBackend do
       config :logger, :webhook_logger, level: :error
 
 
-  Environment variables can be set in your `runtime.exs` file, like so:
+  Environment variables can be set in your `runtime.exs` file:
 
       config :logger, :webhook_logger,
         webhook_url: System.get_env("WEBHOOK_URL")
