@@ -52,7 +52,10 @@ defmodule LoggerWebhookBackendTest.Functions.LogToDiscord do
         Plug.Conn.resp(conn, 200, "")
       end)
 
-      Logger.error("Test mock webhook message")
+      Logger.error("Test mock webhook message",
+        metadata1: "test_metadata_1",
+        metadata2: "test_metadata_2"
+      )
     end
   end
 
@@ -74,7 +77,10 @@ defmodule LoggerWebhookBackendTest.Functions.LogToDiscord do
 
     @tag :integration
     test "send message to real webhook" do
-      Logger.error("Sending log to actual Discord webhook")
+      Logger.error("Sending log to actual Discord webhook",
+        metadata1: "test_metadata_1",
+        metadata2: "test_metadata_2"
+      )
     end
   end
 end

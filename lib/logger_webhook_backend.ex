@@ -107,8 +107,37 @@ defmodule LoggerWebhookBackend do
     timestamp = DateTime.utc_now()
     source = metadata[:application]
     message = IO.iodata_to_binary(message) |> String.slice(0..1900)
+    user_metadata = get_user_metadata(metadata)
+    metadata_section = if user_metadata != "", do: "#{user_metadata}", else: ""
 
-    "[#{timestamp}] [#{source}] [#{log_level}] `#{message}`"
+    """
+    [#{timestamp}] [#{source}] [#{log_level}]
+
+    #{message}
+
+    #{metadata_section}
+    """
+  end
+
+  defp get_user_metadata(metadata) do
+    system_keys = [
+      :application,
+      :erl_level,
+      :file,
+      :line,
+      :module,
+      :function,
+      :pid,
+      :gl,
+      :time,
+      :domain,
+      :mfa
+    ]
+
+    metadata
+    |> Keyword.drop(system_keys)
+    |> Enum.map(fn {key, value} -> "#{key}: #{IO.iodata_to_binary(value)}" end)
+    |> Enum.join("\n")
   end
 
   defp configure(name, opts) do
