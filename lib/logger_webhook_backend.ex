@@ -108,14 +108,12 @@ defmodule LoggerWebhookBackend do
     source = metadata[:application]
     message = IO.iodata_to_binary(message) |> String.slice(0..1900)
     user_metadata = get_user_metadata(metadata)
-    metadata_section = if user_metadata != "", do: "#{user_metadata}", else: ""
+    metadata_section = if user_metadata != "", do: "\n\n#{user_metadata}", else: ""
 
     """
     [#{timestamp}] [#{source}] [#{log_level}]
 
-    #{message}
-
-    #{metadata_section}
+    #{message}#{metadata_section}
     """
   end
 
@@ -135,7 +133,7 @@ defmodule LoggerWebhookBackend do
     ]
 
     metadata
-    |> Keyword.drop(system_keys)
+    |> Enum.filter(fn {key, _} -> !Enum.member?(system_keys, key) end)
     |> Enum.map(fn {key, value} -> "#{key}: #{IO.iodata_to_binary(value)}" end)
     |> Enum.join("\n")
   end
