@@ -1,3 +1,8 @@
+**0.0.3**
+
+- Add `Logger` metadata that belongs to all syslog functions, such as Logger.error/2
+- Reformat messages
+
 **0.0.2**
 
 - Documentation updates
