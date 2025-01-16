@@ -134,7 +134,16 @@ defmodule LoggerWebhookBackend do
 
     metadata
     |> Enum.filter(fn {key, _} -> !Enum.member?(system_keys, key) end)
-    |> Enum.map(fn {key, value} -> "#{key}: #{IO.iodata_to_binary(value)}" end)
+    |> Enum.map(fn {key, value} ->
+      safe_value =
+        case value do
+          v when is_nil(v) -> false
+          v when is_integer(v) -> Integer.to_string(v)
+          v -> v
+        end
+
+      "#{key}: #{safe_value}"
+    end)
     |> Enum.join("\n")
   end
 
